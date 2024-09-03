@@ -1,0 +1,259 @@
+{% extends 'include/base.html' %}
+
+{% block title %}
+프로젝트 게시판 읽기 페이지
+{% endblock %}
+
+{% block style %}
+<style>
+    .pushend {
+        float: right
+    }
+
+    .comment-main {
+        display: flex;
+        justify-content: flex-start;
+        align-items: center;
+    }
+
+    .comment-main strong {
+        min-width: 60px; /* ID와 내용 사이에 일정한 간격을 확보 */
+        margin-right: 10px; /* 아이디와 댓글 내용 사이의 간격 */
+    }
+
+    .reply-symbol {
+        margin-right: 8px;
+        color: gray;
+    }
+
+    /*.reply-item {*/
+    /*    margin-left: 20px; !* 대댓글의 들여쓰기 *!*/
+    /*    padding-left: 15px;*/
+    /*    border-left: 2px solid #ccc; !* 대댓글을 구분하는 선 *!*/
+    /*}*/
+
+    .comment-text {
+        flex: 1;
+        word-wrap: break-word; /* 긴 단어가 영역 밖으로 나가지 않도록 줄바꿈 */
+        overflow-wrap: break-word; /* 긴 단어가 영역 밖으로 나가지 않도록 줄바꿈 */
+        white-space: normal; /* 텍스트가 자동으로 줄바꿈 되도록 설정 */
+        word-break: break-word; /* 긴 단어가 영역을 넘지 않도록 강제 줄바꿈 */
+        hyphens: auto; /* 필요 시 단어를 하이픈(-)으로 나눠서 줄바꿈 */
+    }
+
+    .reply-form {
+        margin-left: 40px; /* 대댓글 폼의 들여쓰기 */
+    }
+
+    h2.text-center {
+        margin-top: 100px; /* 글읽기 텍스트를 아래로 100픽셀만큼 내림 */
+    }
+</style>
+{% endblock %}
+
+{% block main %}
+<main>
+    <h2 class="text-center mb-4">자유게시판</h2>
+    <div class="card">
+        <div class="card-body">
+            <!-- Post Title -->
+            <div class="mb-3 row">
+                <label for="title" class="col-sm-2 col-form-label">제 목</label>
+                <div class="col-sm-10">
+                    <div type="text" class="form-control" id="title" readonly>
+                        {{ boards.title }}
+                    </div>
+                </div>
+            </div>
+            <!-- Post Author -->
+            <div class="mb-3 row">
+                <label for="userid" class="col-sm-2 col-form-label">작성자</label>
+                <div class="col-sm-10">
+                    <div type="text" class="form-control" id="userid" readonly>
+                        {{ boards.userid }}
+                    </div>
+                </div>
+            </div>
+            <!-- Post Content -->
+            <div class="mb-3 row">
+                <label for="contents" class="col-sm-2 col-form-label">본 문</label>
+                <div class="col-sm-10">
+                    <textarea class="form-control" id="contents" rows="10" readonly>{{ boards.contents }}</textarea>
+                </div>
+            </div>
+            <!-- File Upload (MP3 files only) -->
+            <div class="mb-3 row">
+                <label class="col-sm-2 col-form-label">첨부 파일</label>
+                <div class="col-sm-10">
+                    {% if boards.files %}
+                    <ul>
+                        {% for file in boards.files %}
+                        {% if file.fname.endswith('.mp3') %}
+                        <li>
+                            <p>{{ file.fname }}</p>
+                            <p>({{ file.fsize }} bytes, {{ file.regdate.strftime('%Y-%m-%d') }})</p>
+                            <audio controls>
+                                <source src="/files/{{ file.fname|urlencode }}" type="audio/mpeg">
+                                Your browser does not support the audio element.
+                            </audio>
+                        </li>
+                        {% endif %}
+                        {% endfor %}
+                    </ul>
+                    {% else %}
+                    <p>첨부 파일이 없습니다.</p>
+                    {% endif %}
+                </div>
+            </div>
+                <!-- Action Buttons -->
+                <div class="text-center mb-4">
+                    <button type="button" class="btn btn-secondary me-2" onclick="location.href='/board/list/1'">목록</button>
+                    {% if is_author %}
+                    <button type="button" class="btn btn-primary me-2" onclick="location.href='/board/update/{{ boards.bno }}'">수정하기</button>
+                    <button type="button" class="btn btn-danger" id="delete-button">삭제하기</button>
+                    {% endif %}
+                    <input type="hidden" id="bno" value="{{ boards.bno }}">
+                </div>
+
+                <!-- 댓글 -->
+                <p>Comment List</p>
+                <div class="mb-4">
+                    <ul class="list-group">
+                        {% for rp in boards.replys %}
+                        <li class="list-group-item {% if rp.rno != rp.rpno %}reply-item{% endif %}">
+                            <div class="comment-main">
+                                {% if rp.rno != rp.rpno %}
+                                <span class="reply-symbol">ㄴ</span>
+                                {% endif %}
+                                <strong>{{ rp.userid }}</strong>
+                                <span class="comment-text">{{ rp.reply }}</span>
+                            </div>
+                            <small class="text-muted pushend">{{ rp.regdate }}
+                                {% if 'logined_uid' in request.session %}
+                                <a href="javascript:void(0);" onclick="showReplyForm('{{ rp.rno }}')">[대댓글 작성]</a>
+                                {% endif %}
+                            </small>
+
+                            <!-- 대댓글 폼 (기본적으로 숨겨져 있음) -->
+                            <div id="reply-form-{{ rp.rno }}" class="reply-form mt-2" style="display:none;">
+                                <form name="rpfrm_{{ rp.rno }}" class="form-group">
+                                    <textarea class="form-control" name="reply" rows="3" required></textarea>
+                                    <input type="hidden" name="userid" value="{{ request.session.logined_uid }}">
+                                    <input type="hidden" name="bno" value="{{ boards.bno }}">
+                                    <input type="hidden" name="rpno" value="{{ rp.rno }}">
+                                    <div class="text-end mt-2">
+                                        <button class="btn btn-dark" type="submit">대댓글 등록</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+
+                <!-- 댓글 쓰기 -->
+                <div class="card mt-4">
+                    <div class="card-body">
+                        <h4 class="card-title">댓글 쓰기 ID : {{ request.session.logined_uid }}</h4>
+                        <form name="replyfrm" id="replyfrm" class="form-group row">
+                            <div class="mb-3">
+                                <label for="reply" class="form-label">댓글 내용</label>
+                                <textarea class="form-control" name="reply" id="reply" rows="3" required></textarea>
+                            </div>
+                            <div class="text-end">
+                                <button class="btn btn-dark pushbtm" type="submit" id="newbrbtn"><i class="bi bi-chat-dots"></i> 댓글 등록</button>
+                            </div>
+                            <input type="hidden" name="userid" value="{{ request.session.logined_uid }}">
+                            <input type="hidden" name="bno" value="{{ boards.bno }}">
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+</main>
+{% endblock %}
+
+{% block script %}
+<script src="/static/js/bs5/bootstrap.bundle.min.js"></script>
+<script>
+    document.getElementById('delete-button').addEventListener('click', function() {
+        if (confirm('이 게시물을 삭제하시겠습니까?')) {
+            const bno = document.getElementById('bno').value;
+
+            fetch(`/board/view/${bno}`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            })
+                .then(response => {
+                    if (response.ok) {
+                        alert('게시물이 성공적으로 삭제되었습니다.');
+                        window.location.href = '/board/list/1';
+                    } else {
+                        return response.json().then(err => { throw new Error(err.detail) });
+                    }
+                })
+                .catch(error => {
+                    alert(`삭제 중 오류가 발생했습니다: ${error.message}`);
+                });
+        }
+    });
+
+    let replyfrm = document.replyfrm;
+    replyfrm?.addEventListener('submit', (e) => {
+        e.preventDefault();
+
+        const formData = new FormData(replyfrm);
+        let jsondata = {};
+        formData.forEach((val, key) => {
+            jsondata[key] = val;
+        });
+
+        fetch('/board/reply', {
+            method: 'POST',
+            headers: {
+                'Accept': 'application/json',
+                'Content-type': 'application/json'
+            },
+            body: JSON.stringify(jsondata),
+            redirect: 'follow'
+        }).then((res) => {
+            if(res.redirected) location.href = res.url;
+        });
+    });
+
+    function showReplyForm(rno) {
+        const replyForm = document.getElementById(`reply-form-${rno}`);
+        if (replyForm.style.display === 'none' || replyForm.style.display === '') {
+            replyForm.style.display = 'block';
+        } else {
+            replyForm.style.display = 'none';
+        }
+    }
+
+    document.querySelectorAll('.reply-form form').forEach(form => {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const formData = new FormData(form);
+            let jsondata = {};
+            formData.forEach((val, key) => {
+                jsondata[key] = val;
+            });
+
+            fetch('/board/rreply', {
+                method: 'POST',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-type': 'application/json'
+                },
+                body: JSON.stringify(jsondata),
+                redirect: 'follow'
+            }).then((res) => {
+                if(res.redirected) location.href = res.url;
+            });
+        });
+    });
+</script>
+{% endblock %}

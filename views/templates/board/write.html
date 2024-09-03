@@ -1,0 +1,82 @@
+{% extends 'include/base.html' %}
+
+{% block title %}
+프로젝트 게시판 글쓰기 페이지
+{% endblock %}
+
+{% block style %}
+<style>
+    .form-container {
+        background-color: lightslategray;
+        max-width: 800px;
+        margin: auto;
+    }
+    .btn-custom {
+        margin-right: 10px;
+    }
+    h2.text-center {
+        margin-top: 100px; /* 글읽기 텍스트를 아래로 100픽셀만큼 내림 */
+        margin-bottom: 30px; /* 글읽기 텍스트를 아래로 100픽셀만큼 내림 */
+    }
+</style>
+{% endblock %}
+
+{% block main %}
+<main>
+    <div class="container mt-5 form-container">
+        <h2 class="text-center mb-4">글쓰기</h2>
+        <form name="writefrm" enctype="multipart/form-data">
+            <div class="mb-3">
+                <label for="title" class="form-label">제 목</label>
+                <input type="text" class="form-control" name="title" id="title" required>
+            </div>
+            <div class="mb-3">
+                <label for="userid" class="form-label">작성자</label>
+                <input type="text" class="form-control" name="userid" id="userid" value="{{ request.session.logined_uid }}" readonly>
+            </div>
+            <div class="mb-3">
+                <label for="contents" class="form-label">본 문</label>
+                <textarea class="form-control" name="contents" id="contents" rows="10" required></textarea>
+            </div>
+            <div class="mb-3">
+                <label for="file" class="form-label">첨부파일</label>
+                <input type="file" class="form-control" name="files" id="file">
+            </div>
+            <div class="text-center">
+                <button type="button" class="btn btn-secondary btn-custom" id="listbtn" onclick="location.href='/board/list/1'">리스트로</button>
+                <button type="submit" class="btn btn-primary" id="writeokbtn">입력완료</button>
+            </div>
+        </form>
+    </div>
+</main>
+{% endblock %}
+
+{% block script %}
+<script>
+    let writefrm = document.writefrm;
+
+    writefrm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const formData = new FormData(writefrm);
+
+        try {
+        const response = await fetch('/board/write', {
+            method: 'POST',
+            body: formData
+        });
+        if (response.ok) {
+            // Redirect to '/board/list/1' after successful submission
+            window.location.href = '/board/list/1';
+        } else {
+            // Handle errors here, like showing an error message to the user
+            alert('글쓰기에 실패했습니다. 다시 시도해주세요.');
+        }
+    } catch (error) {
+            // Handle network errors or other unexpected errors
+            console.error('Error during form submission:', error);
+            alert('네트워크 오류가 발생했습니다. 다시 시도해주세요.');
+    }
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,222 @@
+{% extends 'include/base.html' %}
+
+{% block title %}
+프로젝트 게시판 목록 페이지
+{% endblock %}
+
+{% block style %}
+<style>
+    .table-container {
+        width: 100%;
+        margin: 20px 0;
+    }
+
+    .table th,
+    .table td {
+        text-align: center;
+        vertical-align: middle;
+    }
+
+    .mainpage{
+        color: white;
+        text-decoration: none;
+    }
+    .search-container {
+        width: 100%;
+        margin: 20px 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .search-left {
+        display: flex;
+        align-items: center;
+    }
+
+    .form-inline {
+        display: flex;
+        align-items: center;
+    }
+
+    .form-select {
+        margin-right: 10px;
+        width: 130px; /* 드롭다운 너비 설정 */
+    }
+
+    .form-control {
+        width: 180px;
+        margin-right: 10px; /* 검색창과 버튼 사이 간격 */
+    }
+
+    #findbtn2 {
+        margin-right: 10px;
+    }
+
+    #writebtn2 {
+        margin-left: auto;
+    }
+
+    h2.text-center {
+        margin-top: 100px; /* 글읽기 텍스트를 아래로 100픽셀만큼 내림 */
+        margin-bottom: 30px; /* 글읽기 텍스트를 아래로 100픽셀만큼 내림 */
+    }
+
+    .button-container {
+        background-color: white;
+        display: flex;
+        justify-content: flex-end;
+    }
+
+    .pagination-container {
+        display: flex;
+        justify-content: center;
+        margin-top: 20px;
+    }
+
+    .pagination .page-item .page-link {
+        color: #007bff;
+    }
+
+    .pagination .page-item.active .page-link {
+        background-color: #007bff;
+        border-color: #007bff;
+        color: white;
+    }
+    @media (max-width: 768px) {
+        .search-container {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        #writebtn2 {
+            margin-left: 0;
+            margin-top: 10px;
+            width: 100%;
+        }
+
+        .form-select,
+        .form-control,
+        #findbtn2 {
+            width: 100%;
+            margin-right: 0;
+            margin-bottom: 10px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block main %}
+<main>
+    <div class="container table-container">
+        <h2 class="text-center"><a class="mainpage" href="/board/list/1">자유게시판</a></h2>
+        <div class="search-container">
+            <div class="search-left">
+            <form class="form-inline">
+                <select name="findtype2" id="findtype2" class="form-select">
+                    <option value="title">제 목</option>
+                    <option value="userid">작성자</option>
+                    <option value="contents">본 문</option>
+                    <option value="titcont">제목+본문</option>
+                </select>
+                <input type="text" class="form-control" style="background-color: white" name="search2" id="search2" placeholder="검색어를 입력하세요">
+                <button type="button" id="findbtn2" class="btn btn-primary"><i class="bi bi-search"></i> 검색</button>
+            </form>
+            </div>
+            <button type="button" class="btn btn-success" id="writebtn2">글쓰기</button>
+        </div>
+        <div class="button-container">
+
+        </div>
+
+        <table class="table table-hover table-striped">
+            <thead class="table-dark">
+            <tr>
+                <th>번호</th>
+                <th>제목</th>
+                <th>작성자</th>
+                <th>작성일</th>
+                <th>조회</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for bd in bdlist %}
+            <tr>
+                <td>{{ bd.bno }}</td>
+                <td><a href="/board/view/{{ bd.bno }}">{{ bd.title }}</a></td>
+                <td>{{ bd.userid }}</td>
+                <td>{{ bd.regdate.strftime('%Y-%m-%d') }}</td>
+                <td>{{ bd.views }}</td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+
+        <div class="pagination-container">
+            <nav>
+                <ul class="pagination">
+                    {% if cpg > 1 %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{baseurl}}{{ cpg - 1 }}">이전</a>
+                    </li>
+                    {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link">이전</span>
+                    </li>
+                    {% endif %}
+
+                    {% for idx in range(stpgb, stpgb + 10) %}
+                    {% if idx <= allpage %} {# idx가 allpage보다 작으면 페이지네이션 출력 #}
+                        {% if cpg != idx %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{baseurl}}{{ idx }}">{{ idx }}</a>
+                        </li>
+                        {% else %}
+                        <li class="page-item active">
+                            <span class="page-link">{{ idx }}</span>
+                        </li>
+                        {% endif %}
+                    {% endif %}
+                    {% endfor %}
+
+                    {% if cpg < allpage %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{baseurl}}{{ cpg + 1 }}">다음</a>
+                    </li>
+                    {% else %}
+                    <li class="page-item">
+                        <a class="page-link" href="#">다음</a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+    </div>
+</main>
+{% endblock %}
+
+{% block script %}
+<script>
+    let writebtn2 = document.querySelector('#writebtn2');
+    let findbtn2 = document.querySelector('#findbtn2');
+
+    writebtn2?.addEventListener('click', () => {
+        location.href = '/board/write'
+    });
+
+    findbtn2.addEventListener('click', () => {
+        let ftype = document.querySelector('#findtype2').value;
+        let fkey = document.querySelector('#search2').value;
+
+        if (fkey === '') {
+            alert('검색내용을 작성하세요');
+            return;
+        }
+
+        let params = `/${ftype}/${fkey}/1`;
+        let findurl = '/board/list' + params;
+
+        location.href = findurl;
+    });
+</script>
+{% endblock %}

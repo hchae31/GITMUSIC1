@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Join Us - Music Service</title>
+  <link href="https://stackpath.bootstrapcdn.com/bootstrap/5.1.3/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      height: 100vh;
+      font-family: Arial, sans-serif;
+      color: #fff;
+      background: linear-gradient(135deg, #ff9a9e, #fad0c4, #fbc2eb, #eccccf);
+      background-size: 600% 600%;
+      animation: gradientChange 15s ease infinite;
+    }
+
+    @keyframes gradientChange {
+      0% {
+        background-position: 0% 0%;
+      }
+      25% {
+        background-position: 100% 0%;
+      }
+      50% {
+        background-position: 100% 100%;
+      }
+      75% {
+        background-position: 0% 100%;
+      }
+      100% {
+        background-position: 0% 0%;
+      }
+    }
+    .container {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      text-align: center;
+      font-size: 28px;
+    }
+    .cta-button {
+      margin-top: 30px;
+    }
+    .cta-button .btn {
+      padding: 20px 40px;
+      font-size: 25px;
+      border-radius: 40px;
+    }
+  </style>
+</head>
+<body>
+
+<!-- 중앙 결제 버튼 -->
+<div class="container">
+  <h1>노래, 동영상, 창의적인 음악들을 간편하게 즐기세요!</h1>
+  <p>₩9,900⁠/⁠월 • VAT 포함 • 언제든지 취소 가능</p>
+  <form name="orderfrm" id="orderfrm" class="cta-button">
+    <button type="button" id="order" class="btn btn-primary" onclick="location.href='/member/join'">지금 시작하기</button>
+  </form>
+</div>
+
+<!-- Bootstrap JS (Optional) -->
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/5.1.3/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

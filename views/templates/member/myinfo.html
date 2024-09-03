@@ -1,0 +1,200 @@
+{% extends 'include/base.html' %}
+
+{% block title %}
+세미 프로젝트 - 회원정보
+{% endblock %}
+
+<script src="https://cdn.iamport.kr/v1/iamport.js"></script>
+
+{% block style %}
+<style>
+    body {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+    }
+
+    main {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: calc(100vh - 50px);
+        width: 100%;
+        overflow-y: auto;
+    }
+
+    .signup-container {
+        width: 100%;
+        max-width: 500px;
+        background: linear-gradient(135deg, #795548 , #D7CCC8);
+        color: black;
+        padding: 40px;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+        font-weight: bold;
+        margin-left: -300px;
+
+    }
+
+    .pay-button {
+        width: 100%;
+        background-color: #FFEB00; /* KakaoPay button color */
+        color: black;
+        border: none;
+        padding: 10px;
+        font-size: 16px;
+        font-weight: bold;
+        cursor: pointer;
+        border-radius: 5px;
+        margin-top: 20px;
+    }
+
+    .pay-button:hover {
+        background-color: #FFD700; /* Darker shade on hover */
+    }
+
+    .logo {
+        max-width: 300px;
+        height: auto;
+        display: block;
+        margin: 0 auto 20px;
+    }
+    .info-container .row div {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-left: -50px;
+    }
+
+    .info-container .row {
+        position: relative;
+        padding-bottom: 10px;
+        margin-bottom: 10px;
+        border-bottom: 1px solid rgba(192, 192, 192, 0.5); /* Subtle silver line */
+        text-align: center;
+    }
+
+    .info-container .row:last-child {
+        border-bottom: none; /* Remove border from the last item */
+    }
+
+</style>
+{% endblock %}
+
+{% block main %}
+<main class="d-flex justify-content-center align-items-center vh-100">
+    <div class="signup-container text-center">
+        {% if myinfo %}
+        <form name="joinfrm" id="joinfrm">
+
+            <div class="info-container mb-3">
+                <div class="mb-3 row">
+                    <label for="userid" class="col-sm-4 col-form-label text-start">아이디</label>
+                    <div class="col-sm-8 text-start" id="userid">{{ myinfo.userid }}</div>
+                </div>
+                <div class="mb-3 row">
+                    <label for="name" class="col-sm-4 col-form-label text-start">이름</label>
+                    <div class="col-sm-8 text-start" id="name">{{ myinfo.name }}</div>
+                </div>
+                <div class="mb-3 row">
+                    <label for="email" class="col-sm-4 col-form-label text-start">이메일</label>
+                    <div class="col-sm-8 text-start" id="email">{{ myinfo.email }}</div>
+                </div>
+                <div class="mb-3 row">
+                    <label for="hiredate" class="col-sm-4 col-form-label text-start">가입일</label>
+                    <div class="col-sm-8 text-start" id="hiredate">{{ myinfo.regdate.strftime('%Y-%m-%d') }}</div>
+                </div>
+                <div class="mb-3 row">
+                    <label for="payment_date" class="col-sm-4 col-form-label text-start">결제일</label>
+                    <div class="col-sm-8 text-start" id="payment_date">
+                        {{ myinfo.payment.payment_date.strftime('%Y-%m-%d') if myinfo.payment else '정보 없음' }}
+                    </div>
+                </div>
+                <div class="mb-3 row">
+                    <label for="usage_period" class="col-sm-4 col-form-label text-start">사용기간</label>
+                    <div class="col-sm-8 text-start" id="usage_period">
+                        {{ myinfo.payment.reg_date.strftime('%Y-%m-%d') if myinfo.payment else '정보 없음' }}
+                    </div>
+                </div>
+            </div>
+
+            <div>
+                <button id="pay-button" class="pay-button">카카오페이 결제하기</button>
+            </div>
+        </form>
+        {% else %}
+        <p class="text-center">회원 정보가 없습니다.</p>
+        {% endif %}
+    </div>
+</main>
+{% endblock %}
+
+{% block script %}
+<script src="https://cdn.iamport.kr/v1/iamport.js"></script>
+<script>
+    // Iamport 객체 초기화
+    var IMP = window.IMP;
+    IMP.init('imp65065213');  // 실제 가맹점 식별코드로 대체하세요.
+
+    function generateUniqueMerchantUid() {
+        // 유니크한 merchant_uid 생성 로직
+        return 'merchant_' + new Date().getTime(); // 예: "merchant_1633052800000"
+    }
+
+    function requestPay() {
+        // 유니크한 merchant_uid 생성
+        var uniqueMerchantUid = generateUniqueMerchantUid();
+
+        // 결제창 호출
+        IMP.request_pay(
+            {
+                // 파라미터 값 설정
+                pg: "kakaopay.TC0ONETIME",  // 실제 상점 ID로 대체하세요.
+                pay_method: "card",
+                merchant_uid: uniqueMerchantUid, // 유니크한 상점 고유 주문번호
+                name: "지아이티뮤직 테스트",
+                amount: 9900,
+                buyer_email: "gitmusic@portone.io",
+                buyer_name: "지아이티뮤직 기술지원팀",
+                buyer_tel: "010-1234-5678",
+                buyer_addr: "서울특별시 강남구 삼성동",
+                buyer_postcode: "123-456",
+            },
+            function (rsp) {
+                if (rsp.success) {
+                    fetch("/payment/payment_success", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({
+                            imp_uid: rsp.imp_uid,
+                            merchant_uid: rsp.merchant_uid
+                        })
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.status === "success") {
+                                alert('결제가 성공적으로 완료되었습니다.');
+                                document.getElementById('payment_date').textContent = data.new_payment_date;
+                                document.getElementById('usage_period').textContent = data.new_reg_date;
+                            } else {
+                                alert('결제 처리에 실패하였습니다.');
+                            }
+                        });
+                } else {
+                    alert('결제에 실패하였습니다. 에러 내용: ' + rsp.error_msg);
+                }
+            }
+        );
+    }
+
+    // 결제 버튼에 이벤트 리스너 추가
+    document.getElementById('pay-button').addEventListener('click', function(event) {
+        event.preventDefault();  // 폼 제출 방지
+        requestPay();  // 결제 요청 함수 호출
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,83 @@
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Music App</title>
+    <!-- Bootstrap CSS -->
+    <style>
+        /*검색창 스타일*/
+        .navbar {
+            position: fixed;
+            top: 0;      /* 화면 상단에 고정 */
+            left: 0;     /* 화면 왼쪽에 고정 */
+            width: 100%;
+            z-index: 1000;
+            /* 다른 요소보다 위에 표시되도록 설정 */
+        }
+        #search {background-color: black; min-height: 58px; position: relative;
+            width: 100%;
+            align-items: center;
+            justify-content: center;
+            max-width: 750px;
+        }
+
+        .btn{min-width: 100px}
+
+        @media (max-width: 870px) {
+            #search {
+                margin-left: 60px ; /* 창을줄이면 토글이 생기면서 오른쪽으로 이동 */
+            }
+        }
+
+
+
+
+    </style>
+</head>
+<body style="background-color: black; color: white">
+<nav class="navbar navbar-expand container-fluid" style="background-color: black; border-bottom: 3px solid skyblue">
+    <div id="search" class="container-fluid">
+        <span class="navbar"></span>
+        <div class="collapse navbar-collapse justify-content-center" id="navbarSupportedContent">
+            <a class="navbar-brand m-1" href="/music/index" style="color: skyblue">GITMUSIC <i class="bi bi-music-note"></i></a>
+
+            <!-- Update form to include action and method -->
+            <form id="searchForm" class="d-flex ms-2 w-100" role="search" action="/music/search" method="get">
+                <!-- Add name attributes to inputs to send data to backend -->
+                <input class="form-control me-4 w-100" style="width: 500px" type="search" name="query" id="searchInput"
+                       placeholder="제목명 가수명을 입력해주세요" aria-label="Search">
+                <!-- Move button inside form to ensure it submits the form -->
+                <button class="btn btn-outline-dark form-control me-1" style="width: 120px; background-color: skyblue"
+                        type="submit" id="findbtn"><i class="bi bi-search"></i> 검색</button>
+            </form>
+        </div>
+    </div>
+</nav>
+
+{% block script %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        let findbtn = document.querySelector('#findbtn');
+        let searchForm = document.querySelector('#searchForm');
+        let searchInput = document.querySelector('#searchInput');
+
+        // Disable the button initially if there's no input
+        findbtn.disabled = true;
+
+        // Enable the button when there is input
+        searchInput.addEventListener('input', () => {
+            findbtn.disabled = searchInput.value.trim() === '';
+        });
+
+        // Listen to the form submission
+        searchForm.addEventListener('submit', function(e) {
+            let query = searchInput.value.trim();
+
+            if (query === '') {
+                alert('검색 내용을 작성하세요!!');
+                e.preventDefault();  // Prevent form submission if input is empty
+            }
+        });
+    });
+</script>
+{% endblock %}
+</body>

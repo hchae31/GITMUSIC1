@@ -1,0 +1,233 @@
+{% extends 'include/base.html' %}
+
+{% block title %}
+프로젝트 검색 - 검색 결과 페이지
+{% endblock %}
+
+{% block main %}
+<main>
+  <div class="container mt-5">
+    <!-- 앨범 정보 Section -->
+    <div class="row">
+      <!-- 앨범 Image -->
+      <div class="col-md-6 mb-4 mb-md-0">
+        <div class="card shadow-sm h-100">
+          <img id="album-cover" src="{{ '/music/musiccover/' + mlist[0].mno|string if mlist else 'default-album-cover.jpg' }}" class="card-img-top" alt="앨범 커버 이미지">
+          <div class="card-body">
+          </div>
+        </div>
+      </div>
+      <!-- 앨범 상세 정보  -->
+      <div class="col-md-6">
+        <div class="card shadow-sm h-100">
+          <div class="card-body">
+            <h5 class="card-title text-center mb-4">앨범 정보</h5>
+            <table class="table table-borderless">
+              <tbody>
+              <tr>
+                <th scope="row">곡</th>
+                <td id="track-title">{{ mlist[0].title if mlist else 'N/A' }}</td>
+              </tr>
+              <tr>
+                <th scope="row">아티스트</th>
+                <td id="track-singer">{{ mlist[0].singer if mlist else 'N/A' }}</td>
+              </tr>
+              <tr>
+                <th scope="row">장르</th>
+                <td id="track-genre">{{ mlist[0].genre if mlist else 'N/A' }}</td>
+              </tr>
+              <tr>
+                <th scope="row">발매일</th>
+                <td id="track-year">{{ mlist[0].year if mlist else 'N/A' }}</td>
+              </tr>
+              <tr>
+                <th scope="row">국가유형</th>
+                <td id="track-country">{{ mlist[0].country if mlist else 'N/A' }}</td>
+              </tr>
+              </tbody>
+            </table>
+            <!-- Album Introduction -->
+            <div class="album-intro-container">
+              <div class="album-ment">
+                <h5 class="card-title text-center mb-4" style=" border-bottom: 1px solid silver; padding: 10px; ">앨범 소개</h5>
+                <p class="card-text" id="track-ment" style=" border-bottom: 1px solid silver; padding: 10px; "> 국가별 - KPop </p>
+              </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+    <div class="container mt-5">
+      <div class="mb-4">
+        <h5 class="text-center mb-3">국가별 음악 K-POP</h5>
+        <div class="top-buttons">
+          <button class="btn btn-success btn-sm" onclick="playRandomMusic()"><i class="bi bi-shuffle"></i> 무작위듣기</button>
+          <button class="btn btn-warning btn-sm" onclick="addAllToStorage()"><i class="bi bi-file-earmark-plus-fill"></i> 전체보관함추가</button>
+        </div>
+        <div class="border-bottom pb-2 mb-3">
+          <div class="row">
+            <div class="col-1 text-center font-weight-bold">순번</div>
+            <div class="col-1 text-center font-weight-bold">제목</div>
+            <div class="col-6 text-md-end font-weight-bold" style="margin-right: 100px;">아티스트</div>
+            <div class="col-1 text-md-center font-weight-bold " style="margin-left: 25px">재생</div>
+            <div class="col-1 text-md-start font-weight-bold" style="margin-left: 30px; padding: 0 1px; ">보관함 추가</div>
+          </div>
+        </div>
+        <div class="music-list-container">
+          {% for music in mlist %}
+          <div class="music-list-item align-items-center" data-mno="{{ music.mno }}">
+            <div class="col-1 text-center">
+              <span class="track-number" style="color: black">{{ loop.index }}</span>
+              <img class="mimg" src="/music/musiccover/{{ music.mno }}" alt="{{ music.title }}">
+            </div>
+            <div class="music-info">
+              <div class="music-title-artist">
+                <span style="color: black; margin-left: 15px">{{ music.title }}</span>
+                <span class="artist-info" style="color: black; display: block; margin-left: 530px">{{ music.singer }}</span>
+              </div>
+            </div>
+            <div class="music-actions">
+              <button class="btn btn-primary btn-sm" onclick="playMusic('{{ music.mno }}', '{{ music.title }}', '{{ music.singer }}', '{{ music.genre }}', '{{ music.year }}', '{{ music.country }}', '{{ music.ment }}')"><i class="bi bi-play-circle"></i></button>
+              <button class="btn btn-secondary btn-sm" onclick="addToStorage('{{ music.mno }}')"><i class="bi bi-inboxes"></i></button>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+</main>
+
+<!-- 음악 플레이어 섹션 -->
+<div id="music-player" class="d-none">
+  <h5 id="music-title" style="color: white; width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"></h5>
+  <img id="music-image" src="" alt="Album Art" class="img-fluid" style="margin-right: 20px; height: 60px; width: 60px; object-fit: cover;">
+  <audio id="audio-player" controls></audio>
+</div>
+
+<script>
+  let audioPlayer = document.getElementById('audio-player');
+  let musicPlayer = document.getElementById('music-player');
+
+  // 음악 재생
+  function playMusic(mno, title, singer, genre, year, country, ment) {
+    console.log("Music no: ", mno);
+    console.log("Music title: ", title);
+    console.log("Music singer: ", singer);
+    console.log("Music genre: ", genre);
+    console.log("Music year: ", year);
+    console.log("Music country: ", country);
+    console.log("Music ment: ", ment);
+
+    // 앨범 커버 이미지 업데이트
+    document.getElementById('album-cover').src = '/music/musiccover/' + mno;  // Corrected URL
+
+    document.getElementById('track-title').textContent = title;
+    document.getElementById('track-singer').textContent = singer;
+    document.getElementById('track-genre').textContent = genre;
+    document.getElementById('track-year').textContent = year;
+    document.getElementById('track-country').textContent = country;
+    document.getElementById('track-ment').textContent = ment;
+
+    // 음악 플레이어 업데이트
+    document.getElementById('music-image').src = '/music/musiccover/' + mno;  // 음악 이미지
+    document.getElementById('music-title').textContent = title;
+    document.getElementById('audio-player').src = '/music/mp3play/' + mno;  // 오디오 파일 URL
+    document.getElementById('music-player').classList.remove('d-none');
+
+    // 오디오 재생
+    audioPlayer.play();
+  }
+
+  // 무작위 재생
+  async function playRandomMusic() {
+    console.log("Playing a random song from the current list.");
+
+    // 현재 페이지의 모든 곡의 ID를 가져옵니다.
+    const musicItems = document.querySelectorAll('.music-list-item');
+    const musicIds = Array.from(musicItems).map(item => item.dataset.mno);
+
+    if (musicIds.length === 0) {
+      console.log("No music items found.");
+      return;
+    }
+
+    try {
+      const response = await fetch('/music/play_random', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ music_ids: musicIds }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch random song');
+      }
+
+      const data = await response.json();
+
+      // Check if all required properties exist in the response data
+      if (data.mno && data.title && data.singer && data.genre && data.year && data.country && data.ment) {
+        playMusic(data.mno, data.title, data.singer, data.genre, data.year, data.country, data.ment);
+      } else {
+        throw new Error('Incomplete data received');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+    }
+  }
+
+  // 보관함 추가
+  async function addToStorage(mno) {
+    try {
+      let response = await fetch('/music/add_to_storage', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ mno: mno }),
+      });
+
+      let result = await response.json();
+      alert(result.message);
+    } catch (error) {
+      console.error("Error adding to storage:", error);
+      alert("Error adding to storage.");
+    }
+  }
+
+  // 보관함 전체 추가
+  async function addAllToStorage() {
+    console.log("Adding all selected songs to storage.");
+
+    const musicItems = document.querySelectorAll('.music-list-item');
+    const musicIds = Array.from(musicItems).map(item => parseInt(item.dataset.mno, 10));
+
+    if (!musicIds.length) {
+      console.log("No music items found.");
+      return;
+    }
+
+    try {
+      const response = await fetch('/music/add_all_storage', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ music_ids: musicIds }), // Correctly format data
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to add selected songs to storage');
+      }
+
+      const result = await response.json();
+      alert(result.message);
+    } catch (error) {
+      console.error('Error:', error);
+      alert("Error adding to storage.");
+    }
+  }
+</script>
+{% endblock %}

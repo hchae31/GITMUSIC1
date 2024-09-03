@@ -1,0 +1,97 @@
+<style>
+    body, html {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+    }
+    .navbar-toggler {
+        position: fixed;
+        top: 10px; /* 상단에서 10px 떨어지게 */
+        left: 10px; /* 좌측에서 10px 떨어지게 */
+        z-index: 100; /* 항상 위에 표시되게 */
+    }
+    .sidebar {
+        position: fixed;
+        top: 66px; /* 네비게이션 바 높이만큼 떨어지게 설정 */
+        left: 0;
+        width: 190px;
+        height: calc(100vh - 66px); /* 화면 높이에서 네비게이션 바 높이만큼 제외 */
+        background-color: black;
+        border-right: 3px solid skyblue;
+        z-index: 30;
+        transform: translateX(0); /* 사이드바가 항상 보이도록 기본 설정 */
+        transition: transform 0.3s ease;
+    }
+    .sidebar.hidden {
+        transform: translateX(-180px); /* 사이드바가 숨겨져 있음 */
+    }
+</style>
+</head>
+<body>
+<nav class="navbar navbar-dark bg-black">
+    <div class="container-fluid">
+        <button class="navbar-toggler" type="button" id="sidebarToggle" aria-expanded="false" aria-label="Toggle sidebar">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+    </div>
+</nav>
+
+<!-- 사이드바 -->
+<div class="sidebar" id="sidebar">
+    <nav>
+        <ul class="nav flex-column p-1">
+            <hr>
+			<li class="nav-item">
+                <a class="nav-link text-light"><i class=""></i> {{ request.session.logined_uid }} </a>
+            </li>
+            <hr>
+            <li class="nav-item">
+                <a class="nav-link text-light" href="/member/myinfo"><i class="bi bi-file-person"></i> 로그인 정보</a>
+            </li>
+            <hr>
+            <li class="nav-item">
+                <a class="nav-link text-light" href="/music/storage"><i class="bi bi-music-note-list"></i> 보관함</a>
+            </li>
+            <hr>
+            <li class="nav-item">
+                <a class="nav-link text-light" href="/board/list/1"><i class="bi bi-clipboard"></i> 게시판 (인디)</a>
+            </li>
+            <hr>
+            <li class="nav-item">
+                <a class="nav-link text-light" href="/music/musicvideo"><i class="bi bi-bar-chart-line"></i> 최신 영상 (MV)</a>
+            </li>
+            <hr>
+            <li class="nav-item">
+                <a class="nav-link text-light" href="/member/logout">Logout</a>
+            </li>
+            <hr>
+        </ul>
+    </nav>
+</div>
+
+<script>
+    function handleResize() {
+        var sidebar = document.getElementById('sidebar');
+        var width = window.innerWidth;
+        if (width <= 870) {
+            // 화면이 870px 이하일 때 사이드바 숨기기
+            sidebar.classList.add('hidden');
+        } else {
+            // 화면이 870px 이상일 때 사이드바 보이기
+            sidebar.classList.remove('hidden');
+        }
+    }
+
+    // 사이드바를 토글하는 스크립트
+    document.getElementById('sidebarToggle').addEventListener('click', function() {
+        var sidebar = document.getElementById('sidebar');
+        sidebar.classList.toggle('hidden'); // 사이드바의 'hidden' 클래스를 토글
+    });
+
+    // 화면 크기 변경 시 사이드바 상태 조정
+    window.addEventListener('resize', handleResize);
+
+    // 초기 화면 로드 시 사이드바 상태 조정
+    handleResize();
+</script>
+

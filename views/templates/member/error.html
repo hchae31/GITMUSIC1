@@ -1,0 +1,21 @@
+{% extends 'include/base.html' %}
+
+{% block title %}
+세미 프로젝트 - 오류발생
+{% endblock %}
+
+{% include 'include/style.html' %}
+
+{% block main %}
+<main class="errorbox">
+    <div class="error-container">
+        <h2 class="text-center mb-4">Error</h2>
+        <form id="loginfrm" class="text-center">
+            <img src="/static/img/error.png" class="error-image img-fluid">
+        </form>
+        <div class="text-center mt-3">
+            <p>로그인 화면으로 돌아가기 <a href="/">Login</a></p>
+        </div>
+    </div>
+</main>
+{% endblock %}

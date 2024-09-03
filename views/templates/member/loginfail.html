@@ -1,0 +1,29 @@
+{% extends 'include/base.html' %}
+
+{% block title %}
+세미 프로젝트 - 오류발생
+{% endblock %}
+
+{% include 'include/style.html' %}
+
+{% block main %}
+<main class="errorbackground">
+    <div class="message">
+        <p>로그인 오류</p>
+    </div>
+    <div class="login-container">
+        <form name="loginfrm" id="loginfrm">
+            <div class="mb-3 text-center error">
+                <p>:( </p>
+                <p>Oops!</p>
+            </div>
+            <div class="mb-3 text-center msg">
+                <p>문제가 발생하였습니다.</p>
+            </div>
+            <div class="text-center mt-3">
+                <p>로그인 화면으로 돌아가기 <a href="/">Login</a></p>
+            </div>
+        </form>
+    </div>
+</main>
+{% endblock %}

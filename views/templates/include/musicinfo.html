@@ -1,0 +1,145 @@
+<style>
+  main {
+    margin: 110px 50px 0 150px;
+    transition: margin 0.5s ease;
+  }
+
+  #music-player {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background-color: #000;
+    padding: 10px;
+    border-top: 1px solid #333;
+    box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.3);
+    z-index: 1000;
+    text-align: center;
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  #audio-player {
+    width: 100%;
+  }
+
+  .d-none {
+    display: none;
+  }
+
+  .img-fluid {
+    max-width: 100%;
+    height: auto;
+  }
+
+  .section img {
+    border-radius: 8px;
+  }
+
+  .section .row {
+    margin-top: -15px;
+  }
+
+  .section h6 {
+    margin-bottom: 10px;
+    font-size: 1.2rem;
+  }
+
+  .section a {
+    text-decoration: none;
+  }
+
+  .track-number {
+    font-weight: bold;
+    color: #007bff;
+    margin-right: 10px;
+  }
+
+  .music-list-container {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+  }
+
+  .music-list-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    background-color: #f8f9fa;
+  }
+
+  .mimg {
+    height: 40px;
+    width: 40px;
+    object-fit: cover;
+    margin-left: 10px; /* Image closer to track number */
+  }
+
+  .music-info {
+    flex-grow: 1;
+    display: flex;
+    align-items: center;
+  }
+
+  .music-title-artist {
+    position: relative;
+    display: flex; /* Flexbox for horizontal alignment */
+    align-items: center; /* Center elements vertically within the container */
+  }
+
+  .music-title-artist span {
+    white-space: nowrap; /* 텍스트가 줄바꿈되지 않도록 설정 */
+  }
+
+  .artist-info {
+    position: absolute; /* 절대 위치 지정 */
+    margin-left: 15px; /* Adjust spacing between title and artist */
+
+  }
+
+  .music-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px; /* Reduced gap for tighter layout */
+  }
+
+  .artist-info {
+    margin-left: 10px; /* Margin to space out artist info from play button */
+  }
+
+  .top-buttons {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    margin-bottom: 20px;
+  }
+
+  @media (max-width: 870px) {
+    .music-actions,
+    .top-buttons {
+      flex-direction: column;
+      gap: 5px;
+      margin-top: 10px;
+    }
+
+    .music-actions button,
+    .top-buttons button {
+      font-size: 0.8rem;
+      padding: 5px 8px;
+      min-width: 5px;
+    }
+  }
+  /* 테이블 스타일 */
+  table tbody tr {
+      border-bottom: 1px solid silver;
+  }
+  table tbody tr:first-child {
+      border-top: none;
+  }
+</style>

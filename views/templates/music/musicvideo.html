@@ -1,0 +1,208 @@
+{% extends 'include/base.html' %}
+
+{% block title %}
+프로젝트 메인 페이지
+{% endblock %}
+
+{% block style %}
+<style>
+  main {
+    margin: 60px 50px 0 150px;
+    transition: margin 0.5s ease;
+    height: calc(100vh - 60px); /* Adjust based on header height */
+    overflow-y: auto;
+  }
+
+  /* 사이드바가 사라졌을 때 본문 여백 제거 */
+  @media (max-width: 560px) {
+    .content {
+      margin: 60px 0 0 0; /* 사이드바가 사라지면 본문 여백 제거 */
+    }
+  }
+
+  .right-column {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+  }
+
+  /* Make the information and lyrics sections stack properly */
+  .video-info, .video-lyrics {
+    flex: 1; /* Make them take equal space */
+    margin-bottom: 20px; /* Add some space between the cards */
+  }
+
+  /* Adjust margins and heights for smaller screens */
+  @media (max-width: 768px) {
+    .row {
+      flex-direction: column;
+    }
+    .right-column {
+      height: auto;
+    }
+  }
+
+  /* Style for the video container */
+  .video-container {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden; /* Ensures the video stays within the container */
+    border-radius: 5px; /* Optional: Add border-radius for better UI */
+  }
+
+  /* Style for the video element */
+  .video-container video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* Ensures the video covers the container while maintaining its aspect ratio */
+  }
+
+  /* Style for music video thumbnails */
+  .thumbnail-container {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+  }
+
+  .thumbnail {
+    width: 32%;
+    border-radius: 5px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: transform 0.3s ease;
+  }
+
+  .thumbnail img {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+
+  .thumbnail:hover {
+    transform: scale(1.05);
+  }
+
+</style>
+{% endblock %}
+
+{% block script %}
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const videoElement = document.getElementById('musicVideoPlayer');
+    const lyricsIframe = document.getElementById('lyricsIframe');
+    const thumbnails = document.querySelectorAll('.thumbnail img');
+
+    // Function to handle thumbnail click
+    thumbnails.forEach(thumbnail => {
+      thumbnail.addEventListener('click', (event) => {
+        const mvno = event.target.getAttribute('data-mvno');
+        if (mvno) {
+          const newVideoSrc = `/music/mp4play/${mvno}`;
+          const newLyricsSrc = `/music/mvlyrics/${mvno}`;
+
+          // Update the video source and lyrics iframe
+          videoElement.querySelector('source').src = newVideoSrc;
+          videoElement.load(); // Load the new video source
+          videoElement.play(); // Play the new video
+
+          lyricsIframe.src = newLyricsSrc; // Update lyrics
+        }
+      });
+    });
+
+    // Fetch three random mvnos for thumbnails
+    async function loadRandomMusicVideos() {
+      try {
+        const response = await fetch('/music/random_mvnos');
+        const data = await response.json();
+
+        if (data.mvnos && data.mvnos.length === 3) {
+          const [mvno1, mvno2, mvno3] = data.mvnos;
+
+          // Update thumbnails with the random images
+          document.getElementById('thumbnail1').src = `/music/mvcover/${mvno1}`;
+          document.getElementById('thumbnail1').setAttribute('data-mvno', mvno1);
+
+          document.getElementById('thumbnail2').src = `/music/mvcover/${mvno2}`;
+          document.getElementById('thumbnail2').setAttribute('data-mvno', mvno2);
+
+          document.getElementById('thumbnail3').src = `/music/mvcover/${mvno3}`;
+          document.getElementById('thumbnail3').setAttribute('data-mvno', mvno3);
+
+          // Set the initial video and lyrics iframe with the first mvno
+          videoElement.querySelector('source').src = `/music/mp4play/${mvno1}`;
+          videoElement.load();
+          lyricsIframe.src = `/music/mvlyrics/${mvno1}`;
+
+        } else {
+          console.error('Error fetching random mvnos:', data.error);
+        }
+      } catch (error) {
+        console.error('Error loading random music videos:', error);
+      }
+    }
+
+    // Load random music videos for thumbnails
+    loadRandomMusicVideos();
+
+    // Set initial video volume
+    videoElement.volume = 0.75;
+  });
+</script>
+{% endblock %}
+
+{% block main %}
+<main>
+  <div class="container mt-5">
+    <div class="row mt-6 mb-4">
+      <!-- Album Playback Section -->
+      <div class="col-md-8 mb-4 mb-md-0">
+        <div class="card shadow-sm h-100">
+          <div class="video-container">
+            <!-- Video element, which will be dynamically updated by JavaScript -->
+            <video id="musicVideoPlayer" controls>
+              <source src="" type="video/mp4"> <!-- Ensure there's a <source> tag -->
+              Your browser does not support the video tag.
+            </video>
+          </div>
+          <div class="card-body">
+            <p class="card-text text-center">뮤직비디오 재생 화면</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Video Lyrics Section -->
+      <div class="col-md-4 mb-4 mb-md-0">
+        <div class="card shadow-sm video-lyrics h-100">
+          <div class="card-body">
+            <h5 class="card-title text-center mb-4">뮤직비디오 가사</h5>
+            <p class="card-text">
+              <!-- Lyrics iframe, which will be dynamically updated by JavaScript -->
+              <iframe id="lyricsIframe" frameborder="0" width="100%" height="200px"></iframe>
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recommended Music Videos -->
+    <div class="mb-4 text-center">
+      <h5>추천 뮤직비디오</h5>
+      <div class="row mt-5 mb-4">
+        <div class="col-md-4 thumbnail">
+          <img id="thumbnail1" data-mvno="" alt="Music Video 1" width="150" height="150">
+        </div>
+        <div class="col-md-4 thumbnail">
+          <img id="thumbnail2" data-mvno="" alt="Music Video 2" width="150" height="150">
+        </div>
+        <div class="col-md-4 thumbnail">
+          <img id="thumbnail3" data-mvno="" alt="Music Video 3" width="150" height="150">
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+{% endblock %}
