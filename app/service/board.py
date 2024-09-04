@@ -161,16 +161,31 @@ class BoardService:
             db.rollback()
 
     @staticmethod
-    def delete_board(db, bno):
+    def delete_board(db, bno: int):
         try:
+            # 레코드 존재 확인
+            board_exists = db.execute(select(Board).where(Board.bno == bno)).scalar_one_or_none()
+
+            if not board_exists:
+                print("삭제할 게시물이 존재하지 않습니다.")
+                return 0  # 삭제할 레코드가 없으면 0을 반환
+
+            # 외래 키 제약 조건에 따라 연관된 데이터 먼저 삭제
+            db.execute(delete(Reply).where(Reply.bno == bno))
+            db.execute(delete(BoardFile).where(BoardFile.bno == bno))
+
+            # 이제 Board 레코드 삭제
             stmt = delete(Board).where(Board.bno == bno)
-            result = db.execute(stmt)
+            db.execute(stmt)
             db.commit()
-            return result
+
+            print("게시물이 성공적으로 삭제되었습니다.")
+            return 1  # 삭제 성공 시 1 반환
 
         except SQLAlchemyError as ex:
-            print(f'▶▶▶ delete_board에서 오류 발생 : {str(ex)}')
             db.rollback()
+            print(f'삭제 중 오류 발생: {str(ex)}')
+            raise ex
 
     @staticmethod
     def update_board(db: Session, board: Board) -> bool:

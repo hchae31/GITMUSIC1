@@ -4,6 +4,7 @@ from math import ceil
 from typing import List
 
 from fastapi import APIRouter, Depends, UploadFile, File, HTTPException
+from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 from starlette.requests import Request
@@ -108,12 +109,17 @@ async def rreplyok(reply: NewReply, db: Session = Depends(get_db)):
 @board_router.delete("/view/{bno}")
 async def delete_board(bno: int, db: Session = Depends(get_db)):
     try:
+        # SQLite에서 외래 키 제약 조건 활성화
+        db.execute(text("PRAGMA foreign_keys=ON"))
+
         result = BoardService.delete_board(db, bno)
-        if result.rowcount > 0:
+
+        if result > 0:
             return {"message": "게시물이 성공적으로 삭제되었습니다."}
         else:
             raise HTTPException(status_code=404, detail="게시물이 존재하지 않거나 이미 삭제되었습니다.")
     except SQLAlchemyError as ex:
+        db.rollback()  # 오류 발생 시 롤백
         print(f'▷▷▷ delete_board에서 오류 발생: {str(ex)}')
         raise HTTPException(status_code=500, detail=f"삭제 중 오류가 발생했습니다: {str(ex)}")
 
@@ -153,30 +159,3 @@ async def update_board(bno: int, request: Request, db: Session = Depends(get_db)
     except SQLAlchemyError as ex:
         print(f'▶▶▶ update_board에서 오류 발생: {str(ex)}')
         raise HTTPException(status_code=500, detail="업데이트 중 오류가 발생했습니다.")
-
-# 글삭제 시 db에서도 삭제
-@board_router.delete("/board/{post_id}")
-async def delete_post(post_id: int, db: Session = Depends(get_db)):
-    logging.info(f"Attempting to delete post with ID: {post_id}")
-
-    # Fetch the board
-    post = db.query(Board).filter(Board.bno == post_id).first()
-    if not post:
-        raise HTTPException(status_code=404, detail="Post not found")
-
-    logging.info(f"Found post: {post}")
-
-    # Delete the post (cascades to delete associated files)
-    db.delete(post)
-    db.commit()
-
-    logging.info(f"Post with ID: {post_id} deleted")
-
-    # Optional: Clean up files from the file system
-    for file in post.files:
-        file_path = os.path.join(UPLOAD_PATH, file.fname)
-        if os.path.exists(file_path):
-            os.remove(file_path)
-            logging.info(f"Deleted file: {file_path}")
-
-    return {"detail": "Post and associated files deleted"}

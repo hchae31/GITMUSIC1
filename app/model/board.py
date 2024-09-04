@@ -15,8 +15,10 @@ class Board(Base):
     regdate: Mapped[datetime] = mapped_column(default=datetime.now)
     views: Mapped[int] = mapped_column(default=0)
     contents: Mapped[str]
-    replys = relationship('Reply', back_populates='board')
+
     files = relationship("BoardFile", back_populates="board", cascade="all, delete-orphan")
+    replys = relationship('Reply', back_populates='board', cascade="all, delete-orphan")
+
 
 # 게시판 파일업로드 테이블
 class BoardFile(Base):
